@@ -1,0 +1,54 @@
+# Build
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Visual Studio cache
+.vs/
+
+# Rider cache
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Environment
+.env
+*.env
+
+# Packages (restaurables depuis nuget)
+packages/
+*.nupkg
+*.snupkg
+
+# Publish
+*.PublishSettings
+publish/
+
+# Azure
+*.azurePubxml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Coverage / Test
+TestResult*/
+*.coverage
+*.coveragexml

@@ -1,0 +1,72 @@
+# Build
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Rider cache
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Environment
+.env
+*.env
+
+# Packages (restaurables depuis nuget)
+packages/
+*.nupkg
+*.snupkg
+
+# Publish
+*.PublishSettings
+publish/
+
+# Azure
+*.azurePubxml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Coverage / Test
+TestResult*/
+*.coverage
+*.coveragexml
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.ncrunchsolution*
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Others
+*.cache
