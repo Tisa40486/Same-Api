@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>178caa09-02fe-4c7f-8045-380bd957697f</UserSecretsId>
@@ -9,7 +9,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
 	</ItemGroup>
 
 	<ItemGroup>
