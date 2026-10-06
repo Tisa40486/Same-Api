@@ -1,6 +1,6 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using SameApi.Business;
 using SameApi.Business.Behaviors;
 using SameApi.Business.User.Command;
