@@ -1,13 +1,14 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SameApi.Business.User.Command;
 using SameApi.Business.User.Query;
-using SameApi.Dto;
 
 namespace SameApi.App.Controllers
 {
     [ApiController]
     [Route("api/user")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -17,23 +18,14 @@ namespace SameApi.App.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("get/{id}")]
-        public async Task<ActionResult<UserResponse?>> GetByIdAsync(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
-            var result = await _mediator.Send(new GetUserByIdQuery { Id = id });
-
-            return Ok(result);
+            var user = await _mediator.Send(new GetUserByIdQuery{Id = id});
+            return user is null ? NotFound() : Ok(user);
         }
 
-        [HttpGet("getAll")]
-        public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllAsync()
-        {
-            var result = await _mediator.Send(new GetAllUserQuery());
-            return Ok(result);
-        }
-
-
-        [HttpPost("create")]
+        [HttpPost("use-profile")]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserCommand command)
         {
             await _mediator.Send(command);
@@ -41,23 +33,10 @@ namespace SameApi.App.Controllers
         }
 
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteUserAsync(int id)
+        public async Task<IActionResult> DeleteUserAsync(string id)
         {
             await _mediator.Send(new DeleteUserCommand { Id = id});
             return Ok();
-        }
-
-        [HttpPut("update")]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] UpdateUserCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return Ok(result);
-        }
-
-        [HttpPut("follow")]
-        public async Task<ActionResult<int>> FollowUserAsync([FromBody] FollowUserCommand command)
-        {
-            return await _mediator.Send(command);
         }
     }
 }

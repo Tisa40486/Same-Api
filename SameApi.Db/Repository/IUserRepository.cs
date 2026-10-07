@@ -6,6 +6,7 @@ namespace SameApi.Db.Repository
 {
     public interface IUserRepository : IBaseRepository<IApiSameDbContext, UserDao>
     {
-        Task<IEnumerable<UserDao>> GetAllAsync(bool withNoTracking = true);
+        Task CreateAsync(UserDao user);                 // utilise user.Id (UID Firebase) comme ID du document
+        Task<bool> EmailExistsAsync(string? username);
     }
 }
