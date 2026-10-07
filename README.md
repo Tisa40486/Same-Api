@@ -8,117 +8,72 @@
 |____/_/   \_\_|  |_|_____|
 ```
 
-### 🎓 The social network built by Geneva students, for Geneva students.
+### 🎓 The social network for Geneva students
 
 ![.NET](https://img.shields.io/badge/.NET-9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
-![Made in](https://img.shields.io/badge/Made%20in-Geneva%20🇨🇭-red?style=for-the-badge)
-
-**Posts · Comments · DMs · Tags** — the engine behind the Same app.
 
 </div>
 
 ---
 
-## 💡 What is Same?
+## 📌 Summary
 
-Same is a Threads-like app for **every student in Geneva**: one place to post, reply, follow people from your school, and slide into DMs.
+**Same** is a Threads-like social network for students in Geneva. This repo is its **REST API** (ASP.NET Core): it handles users, posts, comments, reactions, follows, hashtags, DMs and notifications.
 
-This repo is the **API** that powers it. It stores and serves everything, and keeps the business logic in one place.
-
----
-
-## 🧭 Architecture
+The API sits **in front of Firebase** (auth + data). Clients only talk to the API, which keeps all business rules in one place.
 
 ```mermaid
 flowchart LR
-    A[📱 Same app] -->|Firebase ID token| B[⚙️ Same API<br/>ASP.NET Core]
-    B -->|validates token| C[🔐 Firebase Auth]
-    B -->|reads / writes| D[(🔥 Firebase DB)]
+    A[📱 Same app] -->|Firebase ID token| B[⚙️ Same API]
+    B --> C[🔐 Firebase Auth]
+    B --> D[(🔥 Firebase DB)]
 ```
-
-> The API sits **in front of Firebase**: clients never touch the data directly. All rules (permissions, validation, logic) stay under our control.
 
 ---
 
 ## ✨ Features
 
-| | |
-|---|---|
-| 🔐 **Auth** | Firebase sign-in, token validated by the API |
-| 🧑 **Profiles** | Pseudo, age, gender, school, profession, followers |
-| 📝 **Posts** | Create, read, edit, delete |
-| 🗨️ **Comments** | Reply under any post |
-| ✉️ **DMs** | Private messages between students |
-| 🏷️ **Tags** | Required + optional tags to organize content |
-| 📖 **Swagger** | Interactive docs, try every endpoint live |
+- 🧑 **Profiles**: bio, pictures, school, profession, private / verified accounts
+- 📝 **Posts** with media, visibility, hashtags and saved posts
+- 🗨️ **Comments** with nested replies
+- ❤️ **Reactions** on posts and comments
+- 👥 **Follow** and **block** system
+- ✉️ **DMs**: 1-to-1 and group conversations
+- 🔔 **Notifications**
+- 📖 **Swagger UI** for live API docs
 
 ---
 
 ## 🗺️ Data model
 
+Main relations (full detail in [MLD.md](./MLD.md)):
+
 ```mermaid
 erDiagram
-    USER ||--o{ POST : writes
+    USER ||--o{ POST : creates
     USER ||--o{ COMMENT : writes
+    USER ||--o{ REACTION : reacts
+    USER ||--o{ FOLLOW : follows
     USER ||--o{ MESSAGE : sends
-    USER }o--|| GENDER : has
-    USER }o--|| SCHOOL : studies_at
-    SCHOOL }o--|| PROFESSION : teaches
+    USER ||--o{ NOTIFICATION : receives
+    USER }o--|| SCHOOL : attends
+    SCHOOL }o--|| PROFESSION : related_to
     POST ||--o{ COMMENT : receives
-    POST }o--o{ TAG : tagged_with
-
-    USER {
-        id id
-        bool isadmin
-        int age
-        string pseudo
-        string email
-        int number_follow
-        date createAt
-    }
-    POST {
-        id id
-        string content
-        date createdAt
-    }
-    COMMENT {
-        id id
-        string title
-        string content
-        date createdAt
-    }
-    MESSAGE {
-        id id
-        string content
-        date createdAt
-    }
-    TAG {
-        id id
-        string tag_required
-        string tag_optional
-    }
-    SCHOOL {
-        id id
-        string name
-    }
-    PROFESSION {
-        id id
-        string name
-    }
-    GENDER {
-        id id
-        string gender
-    }
+    POST ||--o{ MEDIA : contains
+    POST }o--o{ HASHTAG : tagged
+    COMMENT ||--o{ COMMENT : replies_to
+    CONVERSATION ||--o{ MESSAGE : contains
+    CONVERSATION ||--o{ CONVERSATIONPARTICIPANT : has
 ```
-
-Full MLD → [MLD.md](./MLD.md)
 
 ---
 
 ## 📡 Endpoints
+
+> 🔒 All endpoints require a valid Firebase token.
 
 <details>
 <summary><b>🧑 Users</b></summary>
@@ -127,11 +82,15 @@ Full MLD → [MLD.md](./MLD.md)
 |---|---|---|
 | `GET` | `/api/users/{id}` | Get a profile |
 | `PUT` | `/api/users/{id}` | Update a profile |
+| `POST` | `/api/users/{id}/follow` | Follow a user |
+| `DELETE` | `/api/users/{id}/follow` | Unfollow |
+| `POST` | `/api/users/{id}/block` | Block a user |
+| `DELETE` | `/api/users/{id}/block` | Unblock |
 
 </details>
 
 <details>
-<summary><b>📝 Posts</b></summary>
+<summary><b>📝 Posts & comments</b></summary>
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -140,17 +99,11 @@ Full MLD → [MLD.md](./MLD.md)
 | `GET` | `/api/posts/{id}` | Get one post |
 | `PUT` | `/api/posts/{id}` | Edit a post |
 | `DELETE` | `/api/posts/{id}` | Delete a post |
-
-</details>
-
-<details>
-<summary><b>🗨️ Comments</b></summary>
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/posts/{id}/comments` | Comments of a post |
+| `GET` | `/api/posts/{id}/comments` | List comments |
 | `POST` | `/api/posts/{id}/comments` | Add a comment |
 | `DELETE` | `/api/comments/{id}` | Delete a comment |
+| `POST` | `/api/posts/{id}/reactions` | React to a post |
+| `POST` | `/api/posts/{id}/save` | Save a post |
 
 </details>
 
@@ -159,12 +112,22 @@ Full MLD → [MLD.md](./MLD.md)
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/messages` | My DMs |
-| `POST` | `/api/messages` | Send a DM |
+| `GET` | `/api/conversations` | My conversations |
+| `POST` | `/api/conversations` | Start a conversation |
+| `GET` | `/api/conversations/{id}/messages` | Read messages |
+| `POST` | `/api/conversations/{id}/messages` | Send a message |
 
 </details>
 
-> 🔒 Every endpoint requires a valid Firebase token.
+<details>
+<summary><b>🔔 Notifications</b></summary>
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/notifications` | My notifications |
+| `PUT` | `/api/notifications/{id}/read` | Mark as read |
+
+</details>
 
 ---
 
@@ -172,41 +135,33 @@ Full MLD → [MLD.md](./MLD.md)
 
 ```
 SameApi
-├── 🚀 SameApi.App        → entry point (Program.cs)
-├── 🧠 SameApi.Business   → logic + AutoMapper profile
-├── 🧱 SameApi.Data       → base context, repositories, DAO interfaces
-├── 💾 SameApi.Db         → DbContext + Unit of Work
-├── 📦 SameApi.Dto        → data transfer objects
-└── 🧩 SameApi.Model      → domain models
+├── SameApi.App        → entry point (Program.cs)
+├── SameApi.Business   → logic + AutoMapper profile
+├── SameApi.Data       → base context, repositories
+├── SameApi.Db         → DbContext + Unit of Work
+├── SameApi.Dto        → DTOs
+└── SameApi.Model      → domain models
 ```
 
 ---
 
 ## ⚡ Quick start
 
+**Prerequisites:** [.NET 10](https://dotnet.microsoft.com/) · a Firebase project
+
 ```bash
-# 1. Clone
 git clone https://github.com/Tisa40486/Same.git
 cd Same
-
-# 2. Add your Firebase credentials (appsettings.json or env vars)
-
-# 3. Run
+# add your Firebase credentials (appsettings.json or env vars)
 dotnet run --project SameApi.App
 ```
 
-Then open **Swagger UI** and start poking around 🎯
-
-**Prerequisites:** [.NET 9](https://dotnet.microsoft.com/) · a Firebase project · VS or VS Code
+Then open Swagger UI to test the endpoints.
 
 ---
 
 <div align="center">
 
-### 📬 Get in touch
-
 📧 [same@sames.school](mailto:same@sames.school) · 🧑‍💻 [@Tisa40486](https://github.com/Tisa40486)
-
-*Made with ☕ in Geneva*
 
 </div>
