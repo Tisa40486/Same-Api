@@ -1,127 +1,167 @@
-# 🗣️ SameApiUnitOfWork API
+<div align="center">
 
-A RESTful Web API for a Same, built with **ASP.NET Core** and **Entity Framework Core**.  
-This API allows clients to perform full CRUD operations on forum entities such as **Users**, **Threads**, **Posts**, and **Comments**.
+```
+ ____    _    __  __ _____
+/ ___|  / \  |  \/  | ____|
+\___ \ / _ \ | |\/| |  _|
+ ___) / ___ \| |  | | |___
+|____/_/   \_\_|  |_|_____|
+```
 
----
-## 🚀 Features
+### 🎓 The social network for Geneva students
 
-- Full CRUD for:
-  - 🧑 Users
-  - 📌 Threads
-  - 💬 Posts
-  - 🗨️ Comments
-- Entity Framework Core with database migrations
-- Swagger UI for interactive API documentation
-- DTOs and AutoMapper for clean data handling
-- CORS support for frontend integration
-- Basic error handling and validation
+![.NET](https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 
----
-## Database Model
-
-You can find the detailed MLD diagram [here](./MLD.md).
-
-## 🧱 Entities Overview
-
-### User
-- `id`, `isadmin`, `age`, `pseudo`, `email`, `password`, `number_follow`, `createAt`, `id_gender_fk`, `id_school_fk`, `id_post_fk` 
-
-### Gender
-- `id`, `gender`
-
-### Tags
-- `Id`, `createAt`, `tag_required`, `tag_optional`
-### TAG_REQUIRED
-- `Id`, `tag_required`
-  
-### TAG_OPTIONAL
-- `Id`, `tag_optional`
-  
-### SCHOOL
-- `Id`, `name`, `profession`
-
-### PROFESSION
-- `Id`, `name`
-
-
-### Post
-- `Id`, `ThreadId`, `id_user`, `Content`, `CreatedAt`
-
-### Comment
-- `Id`, `PostId`, `id_user`, `title`, `Content`, `CreatedAt`
-
----
-## 🛠️ Technologies Used
-
-- ASP.NET Core 6 / 7
-- C#
-- Entity Framework Core
-- SQL Server / SQLite
-- Swagger (Swashbuckle)
-- AutoMapper
-
-## 📁 Project Structure
-
-SameApi:
-  - 🗂️ SameApi.App:
-    - Program.cs
-
-  - 🗂️ SameApi.Business:
-    - 📄 SameApiProfile.cs
-
-  - 🗂️ SameApi.Data:
-    - 📁 DbContexts:
-      - 📄 BaseDbContext
-      - 📄 IBaseDbContext
-    - 📁 Model:
-      - 📄 IModelDao.cs
-    - 📁 Repository:
-      - 📄 BaseRepository
-      - 📄 IBaseRepository
-
-  - 🗂️ SameApi.Db:
-    - 📁 DbContexts:
-      - 📄 SameApiDbContext.cs
-      - 📄 ISameApiDbContext.cs
-    - 📁 UnitOfWork:
-      - 📄 SameApiUnitOfWork.cs
-      - 📄 ISameApiUnitOfWork.cs
-
-  - 🗂️ SameApi.Dto: 
-
-  - 🗂️ SameApi.Model: 
+</div>
 
 ---
 
-## ⚙️ Getting Started
+## 📌 Summary
 
-### Prerequisites
+**Same** is a Threads-like social network for students in Geneva. This repo is its **REST API** (ASP.NET Core): it handles users, posts, comments, reactions, follows, hashtags, DMs and notifications.
 
-- [.NET 9}(https://dotnet.microsoft.com/)
-- DB Server
-- Visual Studio or VS Code
+The API sits **in front of Firebase** (auth + data). Clients only talk to the API, which keeps all business rules in one place.
 
-### Setup Instructions
+```mermaid
+flowchart LR
+    A[📱 Same app] -->|Firebase ID token| B[⚙️ Same API]
+    B --> C[🔐 Firebase Auth]
+    B --> D[(🔥 Firebase DB)]
+```
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Tisa40486/Same.git
-   
-2. **API Endpoints**
-   
-| Method | Endpoint             | Description         |
-| ------ | -------------------- | ------------------- |
-| GET    | `/api/threads`       | Get all threads     |
-| POST   | `/api/threads`       | Create a new thread |
-| GET    | `/api/posts/{id}`    | Get a single post   |
-| PUT    | `/api/posts/{id}`    | Update a post       |
-| DELETE | `/api/comments/{id}` | Delete a comment    |
+---
 
+## ✨ Features
 
---
+- 🧑 **Profiles**: bio, pictures, school, profession, private / verified accounts
+- 📝 **Posts** with media, visibility, hashtags and saved posts
+- 🗨️ **Comments** with nested replies
+- ❤️ **Reactions** on posts and comments
+- 👥 **Follow** and **block** system
+- ✉️ **DMs**: 1-to-1 and group conversations
+- 🔔 **Notifications**
+- 📖 **Swagger UI** for live API docs
 
-- 📬 Contact
-  - 📧Same - same@sames.school
-  - 🧑‍💻GitHub - https://github.com/Tisa40486
+---
 
+## 🗺️ Data model
+
+Main relations (full detail in [MLD.md](./MLD.md)):
+
+```mermaid
+erDiagram
+    USER ||--o{ POST : creates
+    USER ||--o{ COMMENT : writes
+    USER ||--o{ REACTION : reacts
+    USER ||--o{ FOLLOW : follows
+    USER ||--o{ MESSAGE : sends
+    USER ||--o{ NOTIFICATION : receives
+    USER }o--|| SCHOOL : attends
+    SCHOOL }o--|| PROFESSION : related_to
+    POST ||--o{ COMMENT : receives
+    POST ||--o{ MEDIA : contains
+    POST }o--o{ HASHTAG : tagged
+    COMMENT ||--o{ COMMENT : replies_to
+    CONVERSATION ||--o{ MESSAGE : contains
+    CONVERSATION ||--o{ CONVERSATIONPARTICIPANT : has
+```
+
+---
+
+## 📡 Endpoints
+
+> 🔒 All endpoints require a valid Firebase token.
+
+<details>
+<summary><b>🧑 Users</b></summary>
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/users/{id}` | Get a profile |
+| `PUT` | `/api/users/{id}` | Update a profile |
+| `POST` | `/api/users/{id}/follow` | Follow a user |
+| `DELETE` | `/api/users/{id}/follow` | Unfollow |
+| `POST` | `/api/users/{id}/block` | Block a user |
+| `DELETE` | `/api/users/{id}/block` | Unblock |
+
+</details>
+
+<details>
+<summary><b>📝 Posts & comments</b></summary>
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/posts` | Get the feed |
+| `POST` | `/api/posts` | Create a post |
+| `GET` | `/api/posts/{id}` | Get one post |
+| `PUT` | `/api/posts/{id}` | Edit a post |
+| `DELETE` | `/api/posts/{id}` | Delete a post |
+| `GET` | `/api/posts/{id}/comments` | List comments |
+| `POST` | `/api/posts/{id}/comments` | Add a comment |
+| `DELETE` | `/api/comments/{id}` | Delete a comment |
+| `POST` | `/api/posts/{id}/reactions` | React to a post |
+| `POST` | `/api/posts/{id}/save` | Save a post |
+
+</details>
+
+<details>
+<summary><b>✉️ Messages</b></summary>
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/conversations` | My conversations |
+| `POST` | `/api/conversations` | Start a conversation |
+| `GET` | `/api/conversations/{id}/messages` | Read messages |
+| `POST` | `/api/conversations/{id}/messages` | Send a message |
+
+</details>
+
+<details>
+<summary><b>🔔 Notifications</b></summary>
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/notifications` | My notifications |
+| `PUT` | `/api/notifications/{id}/read` | Mark as read |
+
+</details>
+
+---
+
+## 📁 Project structure
+
+```
+SameApi
+├── SameApi.App        → entry point (Program.cs)
+├── SameApi.Business   → logic + AutoMapper profile
+├── SameApi.Data       → base context, repositories
+├── SameApi.Db         → DbContext + Unit of Work
+├── SameApi.Dto        → DTOs
+└── SameApi.Model      → domain models
+```
+
+---
+
+## ⚡ Quick start
+
+**Prerequisites:** [.NET 10](https://dotnet.microsoft.com/) · a Firebase project
+
+```bash
+git clone https://github.com/Tisa40486/Same.git
+cd Same
+# add your Firebase credentials (appsettings.json or env vars)
+dotnet run --project SameApi.App
+```
+
+Then open Swagger UI to test the endpoints.
+
+---
+
+<div align="center">
+
+📧 [same@sames.school](mailto:same@sames.school) · 🧑‍💻 [@Tisa40486](https://github.com/Tisa40486)
+
+</div>
