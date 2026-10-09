@@ -19,9 +19,13 @@ namespace SameApi.Db
 
             services.AddScoped<IApiSameUnitOfWork, SameApiUnitOfWork>();
         }
-        public static void RegisterFireStore(this IServiceCollection services, string projectId)
+        public static void RegisterFireStore(this IServiceCollection services, string projectId, string databaseId)
         {
-            services.AddSingleton(_ => FirestoreDb.Create(projectId));
+            services.AddSingleton(_ => new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                DatabaseId = databaseId
+            }.Build());
         }
     }
 }

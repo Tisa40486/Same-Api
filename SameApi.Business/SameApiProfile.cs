@@ -10,7 +10,11 @@ namespace SameApi.Business
         {
             //User
             CreateMap<UserInput, UserDao>();
-            CreateMap<UserDao, UserResponse>();
+            CreateMap<UserDao, UserResponse>()
+                .ForMember(
+                    dest => dest.CreatedAt,
+                    opt => opt.MapFrom(src => src.CreatedAt.ToDateTime())
+                );
         }
     }
 }

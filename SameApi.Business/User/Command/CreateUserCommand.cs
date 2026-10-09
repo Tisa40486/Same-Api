@@ -25,34 +25,23 @@ namespace SameApi.Business.User.Command
 
         public async Task Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
+            if (await _uow.UserRepository.EmailExistsAsync(request.Email))
+                throw new InvalidOperationException(
+                    "Un utilisateur avec cet e-mail existe déjà.");
+
             var now = Timestamp.GetCurrentTimestamp();
 
-            if (await _uow.UserRepository.EmailExistsAsync(request.Email))
-                Update(request, now);
-            else
-                Create(request, now);
-        }
+            UserDao user = _mapper.Map<UserDao>(request);
 
-        #region Create and Update method
-        private async void Create(UserInput input, Timestamp now)
-        {
+            if (request.Email != null )
+                user.Username = request.Email.Split('@')[0];
 
-            UserDao user = _mapper.Map<UserDao>(input);
+            user.BirthDate = request.BirthDate?.ToString("yyyy-MM-dd");
 
             user.CreatedAt = now;
             user.UpdatedAt = now;
 
             await _uow.UserRepository.CreateAsync(user);
         }
-
-        private async void Update(UserInput input, Timestamp now)
-        {
-            UserDao user = _mapper.Map<UserDao>(input);
-
-            user.UpdatedAt = now;
-
-            await _uow.UserRepository.UpdateAsync(user);
-        }
-        #endregion
     }
 }

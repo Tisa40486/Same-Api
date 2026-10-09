@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 var projectId = builder.Configuration["Firestore:ProjectId"]!;
+var DatabaseId = builder.Configuration["Firestore:DatabaseId"]!;
 // -------------------- Controllers --------------------
 builder.Services.AddControllers();
 
@@ -40,7 +41,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // -------------------- Services --------------------
 
-builder.Services.RegisterFireStore(projectId);
+builder.Services.RegisterFireStore(projectId, DatabaseId);
 builder.Services.RegisterSameApiDbContainer();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(SameApiProfile).Assembly);

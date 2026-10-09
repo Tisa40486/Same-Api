@@ -9,13 +9,24 @@ namespace SameApi.Db.Repository.Implementation
     {
         protected override string CollectionName => "users";
 
-        public Task CreateAsync(UserDao user) =>
-            Collection.Document(user.Id).CreateAsync(user);
+        public async Task CreateAsync(UserDao user)
+        {
+            var document = Collection.Document();
+
+            user.Id = document.Id;
+
+            await document.CreateAsync(user);
+        }
 
         public async Task<bool> EmailExistsAsync(string? email)
         {
             var snap = await Collection.WhereEqualTo("email", email).Limit(1).GetSnapshotAsync();
             return snap.Count > 0;
+        }
+
+        public Task UpdateFieldsAsync(string id, Dictionary<string, object> updates)
+        {
+            return Collection.Document(id).UpdateAsync(updates);
         }
     }
 }

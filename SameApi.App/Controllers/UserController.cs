@@ -31,6 +31,13 @@ namespace SameApi.App.Controllers
             await _mediator.Send(command);
             return Ok();
         }
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateUserAsync(string id,  [FromBody] UpdateUserCommand command)
+        {
+            command.Id = id;
+            await _mediator.Send(command);
+            return Ok();
+        }
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUserAsync(string id)

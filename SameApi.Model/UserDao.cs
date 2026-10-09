@@ -15,17 +15,11 @@ namespace SameApi.Model
         [FirestoreProperty("email")]
         public string Email { get; set; } = "";
 
-        [FirestoreProperty("firstName")]
-        public string? FirstName { get; set; }
-
-        [FirestoreProperty("lastName")]
-        public string? LastName { get; set; }
-
         [FirestoreProperty("bio")]
         public string? Bio { get; set; }
 
         [FirestoreProperty("birthDate")]
-        public DateTime? BirthDate { get; set; }       
+        public string? BirthDate { get; set; }       
 
         [FirestoreProperty("profilePictureUrl")]
         public string? ProfilePictureUrl { get; set; }
